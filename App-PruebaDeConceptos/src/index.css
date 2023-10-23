@@ -25,10 +25,17 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
+  background-image: url('https://static.vecteezy.com/system/resources/previews/000/543/708/original/futuristic-blue-earth-abstract-technology-background-artificial-intelligence-digital-transformation-and-big-data-concept-business-growth-computer-security-and-investment-concept-vector-illustration.jpg'); /* Cambia 'ruta/de/tu/imagen.jpg' por la ubicación de tu imagen */
+  background-size: cover; /* Ajusta el tamaño de la imagen al tamaño del contenedor */
+  background-repeat: no-repeat; /* Evita la repetición de la imagen de fondo */
+  font-family: Arial, sans-serif; /* Tipo de fuente de respaldo si la imagen no se carga */
+  background-attachment: fixed;
+  background-position: center;
+ 
+  height: 100vh; /* Asegura que el cuerpo ocupe toda la altura de la ventana */
+
+  
 }
 
 h1 {

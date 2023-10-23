@@ -1,33 +1,51 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import {  composeAPI, generateAddress, prepareTransfers, sendTrytes, getBalances } from '@iota/core';
+
 //import generateSeed from 'iota-generate-seed';
 import './TangleRed.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Header from './Header';
+import { Container, ProgressBar } from 'react-bootstrap';
+import Dropzone from 'react-dropzone'
+import Whatsapp from './Whatsapp';
+import Swal from 'sweetalert2'
+import { useNavigate } from 'react-router-dom';
 import CryptoJS from 'crypto-js';
-
-
 
 
 function TangleRed() {
     const [seed, setSeed] = useState('');
   const [address, setAddress] = useState('');
   const [balance, setBalance] = useState(0);
-  const [file, setFile] = useState(null);
-  const [encryptedFile, setEncryptedFile] = useState(null);
-  
-  const notifySuccess = (trytes) => {
-    toast.success('Mensaje de éxito', {
-      style: { background: 'green', color: 'white' },
-    },trytes);
+  const [encrypted, setEncrypted] = useState(null);
+  const [encryptionKey,setEncryptionKey]=useState('');
+  const [files, setFiles] = useState([]);
+  const [progress, setProgress] = useState(0);
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const onDrop = (acceptedFiles) => {
+    setFiles(acceptedFiles);
+
+    // Simulamos una carga con un temporizador
+    setTimeout(() => {
+      setProgress(100);
+    }, 2000);
   };
-  const Redireccion = () => {
-     window.location.href = 'http://localhost:8000/api/v1/docs/';
+
+  const notifySuccess = (mensaje,variable) => {
+    toast.success(mensaje, {
+      style: { background: 'green', color: 'white' },
+    },variable);
+  };
+
+  const servidor = () => {
+  const n=navigate('/servidor');
+  return n;
     
   };
-  const notifyError = (error) => {
-    toast.error('Mensaje de error', {
+  const notifyError = (mensaje,error) => {
+    toast.error(mensaje, {
       style: { background: 'red', color: 'white' },
     },error);
   };
@@ -35,141 +53,159 @@ function TangleRed() {
     setSeed(event.target.value);
   };
 
-  const generateAddres = () => {
-    if (seed) {
-      const iota = composeAPI({
-        provider: 'https://nodes.iota.org:443', // Cambia a tu proveedor de nodos IOTA preferido
-      });
-
-      const options = {
-        index: 0, // El índice de la dirección que deseas generar
-        security: 2, // Nivel de seguridad (1, 2, o 3)
-      };
-
-      generateAddress(iota, seed, options)
-        .then((address) => {
-          setAddress(address);
-        })
-        .catch((error) => {
-          notifyError(error);
-          console.error('Error al generar la dirección:', error);
-        });
-    } else {
-      alert('Ingresa un seed válido');
-    }
+  const generateAddres = (e) => {
+    e.preventDefault();
+    axios.post('http://localhost:8000/api/v1/generateAddress').then(res=>{
+    setAddress(res.data);
+    notifySuccess('has generado una direccion',address);
+ }).catch(err=> notifyError('la direccion esta vacia o un error',err));
+    
   };
 
-  const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
-  };
+ 
 
   const encryptFile = () => {
-    try {
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const fileContent = event.target.result;
+    //const formData = new FormData();
+   
+    files.forEach((file) => {
+    
+axios.post('http://localhost:8000/api/v1/encryptado',JSON.stringify({file:file.path,encryptionKey:encryptionKey}),{  headers: {
+ 'Content-Type': 'multipart/form-data',
+ 'content-type':'application/json; charset=utf-8'
+ 
+},
 
-          // Encripta el archivo con una clave secreta (debes gestionar esta clave de forma segura)
-          const encryptionKey = 'ClaveDeEncriptacion';
-          const encrypted = CryptoJS.AES.encrypt(fileContent, encryptionKey).toString();
-          setEncryptedFile(encrypted);
-        };
-        reader.readAsDataURL(file);
-      }
-    } catch (error) {
-      console.error('Error al encriptar el archivo:', error);
-    }
+}).then(res=>{
+  
+  setEncrypted(res.data)
+  notifySuccess('su archivo ha sido encryptado',res.data);
+}).catch(err=>notifyError('el encryptionKey  esta vacia o un error',err));
+});
   };
 
-  const sendEncryptedFile = async () => {
-    if (!address || !encryptedFile) {
-      console.error('Debes generar una dirección y encriptar un archivo primero.');
-      return;
-    }
+  const sendEncryptedFile = () => {
+    files.forEach((file) => {
 
-    try {
-      const iota = composeAPI({
-        provider: 'https://nodes.devnet.iota.org' // Cambia a la red principal cuando sea necesario
-      });
 
-      // Prepara la transacción con el archivo encriptado
-      const transfers = prepareTransfers([encryptedFile], [{ address, value: 0 }]);
-
-      // Envia la transacción a la red Tangle
-      const trytes = await sendTrytes(iota, transfers, 3, 9);
-
-      console.log('Transacción enviada con éxito:', trytes);
-      notifySuccess(trytes);
-    } catch (error) {
-      console.error('Error al enviar el archivo encriptado:', error);
-    }
-  };
-
-  const checkBalance = async () => {
-    if (address) {
-      try {
-        const iota = composeAPI({
-          provider: 'https://nodes.devnet.iota.org' // Cambia a la red principal cuando sea necesario
-        });
-
-        // Verifica el saldo de la dirección
-        const { balances } = await getBalances(iota, [address]);
-        setBalance(balances[0]);
-      } catch (error) {
-        console.error('Error al verificar el saldo:', error);
-      }
-    } else {
-      console.error('Debes generar una dirección primero.');
-    }
-  };
-  const decencritarArchivo=()=>{
-    axios.post('http://localhost:8000/api/v1/decryptFile',JSON.stringify({encryptFile:encryptFile,encryptionKey: 'ClaveDeEncriptacion'}), {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+   axios.post('http://localhost:8000/api/v1/redTangle',JSON.stringify({address:address,
+   encryptionKey:encryptionKey,
+   encrypted:encrypted,
+   file:file.path}),{  headers: {
+    'Content-Type': 'multipart/form-data',
+    'content-type':'application/json; charset=utf-8'
+    
+   },}).then(res=>{
+   Swal.fire({
+      position: 'top',
+      icon: 'success',
+      title:res.data.message,
+      showConfirmButton: false,
+      timer: 1500
     })
-    .then(() => {
-      console.log('File uploaded successfully');
-      // You can handle the response here
-    })
-    .catch(error => {
-      console.error('Error uploading file', error);
-      // Handle the error
+    
+    
+    
+    console.log(res.data)}).catch(err=>notifyError('el campo archivo  esta vacia o un error de los otro campo',err));
     });
+  
+  };
 
+  
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+  const iconStyle = {
+    position: 'absolute',
+    right: '10px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    cursor: 'pointer',
+  };
+ 
+  
+ 
+  return (<>
+<Header/>
+    <div className="container contenedor">
 
-
-  }
-
-  return (
-    <div className="container">
       <div className="item">
       <h2>Red Tangle Básica para Enviar Archivo Encriptado</h2>
       <button onClick={generateAddres}>Generar Dirección</button>
-  <button onClick={checkBalance}>Verificar Saldo</button>
       <button onClick={encryptFile}>Encriptar Archivo</button>
       <button onClick={sendEncryptedFile}>Enviar Archivo Encriptado</button>
-      <button onClick={decencritarArchivo}>decencriptar Archivo </button>
-      <button onClick={Redireccion}>Documentacion</button>
+      <button onClick={servidor}>Servidor</button>
+    
+
 
       <div className="row">
-      <div className="col-md-4">
+      <div className="col-md-6">
       <ToastContainer />
-        <label>Ingresar Seed</label>
+     
+        <label>Ingresar tu Address</label>
         <input
         type="text" className="form-control"
-        placeholder="Ingresa tu seed"
-        onChange={handleChange}
+        placeholder="generar un Address"
+        onChange={(e)=>setAddress(e.target.value)} value={address}
       />
+        <label>Ingresar ClaveDeEncriptacion</label>
+        <div className="form-group" style={{ position: 'relative' }}>
+      <input
+        type={showPassword ? "text" : "password"}
+        className="form-control"
+        placeholder="Ingresa tu claveDeEncriptacion"
+        onChange={(e) => setEncryptionKey(e.target.value)}
+        value={encryptionKey}
+      />
+      <span onClick={togglePasswordVisibility} style={iconStyle}>
+        {showPassword ? (
+          <i className="fas fa-eye-slash"></i>
+        ) : (
+          <i className="fas fa-eye"></i>
+        )}
+      </span>
+    </div>
     
-      <p>Dirección Generada: {address}</p>
-      <input type="file" className="form-control" onChange={handleFileChange} />
-        <p>Saldo: {balance} IOTA</p>
+    
+    <h5 style={{margin:"20px",padding:"5px",display:"none"}}>Saldo generado</h5>
+  
+   
+    
       </div>
+      <div className="col-md-6">
+
+      <Container>
+      <h4 style={{color:"green"}}>Subir Archivo aqui</h4>
+      <Dropzone onDrop={onDrop}>
+        {({ getRootProps, getInputProps }) => (
+          <div {...getRootProps()} className="dropzone">
+            <input type="file" name="file"  {...getInputProps()}  />
+            <p>Arrastra y suelta archivos aquí o haz clic para seleccionar archivos</p>
+          </div>
+        )}
+      </Dropzone>
+      <ProgressBar now={progress} label={`${progress}%`} variant="success"  />
+      {files.length > 0 && (
+        <div>
+          <h3>Archivos seleccionados:</h3>
+          <ul>
+            {files.map((file) => (
+              <li key={file.name}><i className="fa-solid fa-folder-open icon"></i>{file.name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </Container>
+
+
+
+      </div>
+      
       </div>
     </div>
+    <Whatsapp/>
     </div>
+
+    </>
   );
 }
 

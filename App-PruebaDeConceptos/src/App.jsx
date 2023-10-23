@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 //import './App.css';
 import Form from './Form';
 import TangleRed from './TangleRed';
-
+import Servidor from './Servidor';
+import Guia from './Guia';
 function App() {
 
 
@@ -11,8 +12,9 @@ function App() {
     <>
     <BrowserRouter>
       <Routes>
-        <Route path="red" element={<Form/>}/>
+        <Route path="servidor" element={<Servidor/>}/>
         <Route path="/" element={<TangleRed/>}/>
+        <Route path="guia" element={<Guia/>}/>
         
       </Routes>
     </BrowserRouter>
