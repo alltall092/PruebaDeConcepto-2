@@ -27,7 +27,7 @@ const [filterData,setFilterData]=useState([]);
     }
     useEffect(()=>{
 
-axios.get('http://localhost:8000/api/v1/recibir').then(res=>setProducts(res.data));
+axios.get('https://nodejsprueba.onrender.com/api/v1/recibir').then(res=>setProducts(res.data));
 
 
     },[]);
@@ -64,7 +64,7 @@ axios.get('http://localhost:8000/api/v1/recibir').then(res=>setProducts(res.data
           .map((product) => product.id);
     
         try {
-          await axios.delete('http://localhost:8000/api/v1/eliminar', {
+          await axios.delete('https://nodejsprueba.onrender.com/api/v1/eliminar', {
             data: { ids: selectedProductIds },
           },{  headers: {
             'Content-Type': 'multipart/form-data',
@@ -79,7 +79,7 @@ axios.get('http://localhost:8000/api/v1/recibir').then(res=>setProducts(res.data
       };
       const eliminar = async (id) => {
         try {
-           await axios.get(`http://localhost:8000/api/v1/eliminar/${id}`,{  headers: {
+           await axios.get(`https://nodejsprueba.onrender.com/api/v1/eliminar/${id}`,{  headers: {
             'Content-Type': 'multipart/form-data',
             'content-type':'application/json; charset=utf-8'},});
           console.log("Eliminado con éxito");

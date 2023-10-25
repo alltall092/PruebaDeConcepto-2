@@ -11,7 +11,8 @@ import Dropzone from 'react-dropzone'
 import Whatsapp from './Whatsapp';
 import Swal from 'sweetalert2'
 import { useNavigate } from 'react-router-dom';
-import CryptoJS from 'crypto-js';
+
+import Footer  from './Footer';
 
 
 function TangleRed() {
@@ -55,7 +56,7 @@ function TangleRed() {
 
   const generateAddres = (e) => {
     e.preventDefault();
-    axios.post('http://localhost:8000/api/v1/generateAddress').then(res=>{
+    axios.post('https://nodejsprueba.onrender.com/api/v1/generateAddress').then(res=>{
     setAddress(res.data);
     notifySuccess('has generado una direccion',address);
  }).catch(err=> notifyError('la direccion esta vacia o un error',err));
@@ -69,7 +70,7 @@ function TangleRed() {
    
     files.forEach((file) => {
     
-axios.post('http://localhost:8000/api/v1/encryptado',JSON.stringify({file:file.path,encryptionKey:encryptionKey}),{  headers: {
+axios.post('https://nodejsprueba.onrender.com/api/v1/encryptado',JSON.stringify({file:file.path,encryptionKey:encryptionKey}),{  headers: {
  'Content-Type': 'multipart/form-data',
  'content-type':'application/json; charset=utf-8'
  
@@ -87,7 +88,7 @@ axios.post('http://localhost:8000/api/v1/encryptado',JSON.stringify({file:file.p
     files.forEach((file) => {
 
 
-   axios.post('http://localhost:8000/api/v1/redTangle',JSON.stringify({address:address,
+   axios.post('https://nodejsprueba.onrender.com/api/v1/redTangle',JSON.stringify({address:address,
    encryptionKey:encryptionKey,
    encrypted:encrypted,
    file:file.path}),{  headers: {
@@ -204,9 +205,12 @@ axios.post('http://localhost:8000/api/v1/encryptado',JSON.stringify({file:file.p
     </div>
     <Whatsapp/>
     </div>
+    <div className="contener">
+<Footer/>
+</div>
 
     </>
   );
 }
-
+// hola 
 export default TangleRed;
